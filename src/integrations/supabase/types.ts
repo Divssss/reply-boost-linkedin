@@ -9,7 +9,201 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      generated_replies: {
+        Row: {
+          created_at: string | null
+          id: string
+          reply_text: string
+          thread_id: string | null
+          tone: string | null
+          user_rating: number | null
+          was_used: boolean | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          reply_text: string
+          thread_id?: string | null
+          tone?: string | null
+          user_rating?: number | null
+          was_used?: boolean | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          reply_text?: string
+          thread_id?: string | null
+          tone?: string | null
+          user_rating?: number | null
+          was_used?: boolean | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "generated_replies_thread_id_fkey"
+            columns: ["thread_id"]
+            isOneToOne: false
+            referencedRelation: "threads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          created_at: string | null
+          email: string | null
+          id: string
+          linkedin_profile_url: string | null
+          name: string | null
+          subscription_plan: string | null
+          updated_at: string | null
+          usage_credits: number | null
+        }
+        Insert: {
+          created_at?: string | null
+          email?: string | null
+          id: string
+          linkedin_profile_url?: string | null
+          name?: string | null
+          subscription_plan?: string | null
+          updated_at?: string | null
+          usage_credits?: number | null
+        }
+        Update: {
+          created_at?: string | null
+          email?: string | null
+          id?: string
+          linkedin_profile_url?: string | null
+          name?: string | null
+          subscription_plan?: string | null
+          updated_at?: string | null
+          usage_credits?: number | null
+        }
+        Relationships: []
+      }
+      threads: {
+        Row: {
+          created_at: string | null
+          id: string
+          participant_count: number | null
+          post_content: string | null
+          post_url: string
+          summary_text: string | null
+          thread_text: string | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          participant_count?: number | null
+          post_content?: string | null
+          post_url: string
+          summary_text?: string | null
+          thread_text?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          participant_count?: number | null
+          post_content?: string | null
+          post_url?: string
+          summary_text?: string | null
+          thread_text?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "threads_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      usage_analytics: {
+        Row: {
+          action_type: string
+          created_at: string | null
+          id: string
+          metadata: Json | null
+          thread_id: string | null
+          user_id: string | null
+        }
+        Insert: {
+          action_type: string
+          created_at?: string | null
+          id?: string
+          metadata?: Json | null
+          thread_id?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          action_type?: string
+          created_at?: string | null
+          id?: string
+          metadata?: Json | null
+          thread_id?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "usage_analytics_thread_id_fkey"
+            columns: ["thread_id"]
+            isOneToOne: false
+            referencedRelation: "threads"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "usage_analytics_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_settings: {
+        Row: {
+          auto_summarize: boolean | null
+          created_at: string | null
+          custom_prompts: string[] | null
+          notification_settings: Json | null
+          preferred_tone: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          auto_summarize?: boolean | null
+          created_at?: string | null
+          custom_prompts?: string[] | null
+          notification_settings?: Json | null
+          preferred_tone?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          auto_summarize?: boolean | null
+          created_at?: string | null
+          custom_prompts?: string[] | null
+          notification_settings?: Json | null
+          preferred_tone?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_settings_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never

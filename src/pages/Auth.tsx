@@ -1,13 +1,20 @@
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
 const AuthPage = () => {
   const { user, loading } = useSupabaseAuth();
   const navigate = useNavigate();
+
+  const [mode, setMode] = useState<"login" | "signup">("login");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [errorMsg, setErrorMsg] = useState("");
+  const [loadingSubmit, setLoadingSubmit] = useState(false);
 
   useEffect(() => {
     if (!loading && user) {
@@ -15,23 +22,99 @@ const AuthPage = () => {
     }
   }, [user, loading, navigate]);
 
-  const handleLinkedInLogin = async () => {
-    await supabase.auth.signInWithOAuth({
-      provider: "linkedin_oidc",
-      options: {
-        redirectTo: `${window.location.origin}/auth`
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setErrorMsg("");
+    setLoadingSubmit(true);
+    if (mode === "login") {
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+      if (error) setErrorMsg(error.message);
+    } else {
+      // Signup flow with email redirect
+      const { error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          emailRedirectTo: `${window.location.origin}/auth`
+        }
+      });
+      if (error) {
+        setErrorMsg(error.message);
+      } else {
+        setErrorMsg("Check your email for a confirmation link.");
       }
-    });
+    }
+    setLoadingSubmit(false);
   };
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center px-4">
       <div className="max-w-sm w-full p-8 border rounded-lg bg-white shadow flex flex-col gap-4">
-        <h1 className="text-xl font-semibold text-center mb-2">Sign In / Sign Up</h1>
-        <Button variant="outline" className="w-full flex items-center gap-2 justify-center" onClick={handleLinkedInLogin}>
-          <svg width="24" height="24" aria-hidden="true" fill="none" viewBox="0 0 32 32"><rect width="32" height="32" fill="#0077B5" rx="6"/><path fill="#fff" d="M25.36 17.45v6.18h-3.01v-5.78c0-1.45-.52-2.44-1.83-2.44-1 0-1.6.7-1.86 1.37-.1.23-.12.54-.12.86v6h-3.01s.04-9.71 0-10.72h3.01v1.52c.4-.61 1.12-1.47 2.73-1.47 2 0 3.51 1.31 3.51 4.13zm-12.5-7.75a1.74 1.74 0 1 1 0-3.48 1.74 1.74 0 0 1 0 3.48zM8.86 23.63h3V12.91h-3v10.72z"/></svg>
-          Continue with LinkedIn
-        </Button>
+        <h1 className="text-xl font-semibold text-center mb-2">
+          {mode === "login" ? "Sign In" : "Sign Up"}
+        </h1>
+        <form onSubmit={handleSubmit} className="space-y-3">
+          <Input
+            type="email"
+            autoComplete="username"
+            placeholder="Email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+          />
+          <Input
+            type="password"
+            autoComplete={mode === "signup" ? "new-password" : "current-password"}
+            placeholder="Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+          />
+          {errorMsg && (
+            <div className="text-red-600 text-sm">{errorMsg}</div>
+          )}
+          <Button
+            type="submit"
+            className="w-full"
+            disabled={loadingSubmit}
+          >
+            {loadingSubmit ? "Processing..." : mode === "login" ? "Sign In" : "Sign Up"}
+          </Button>
+        </form>
+        <div className="text-center text-sm">
+          {mode === "login" ? (
+            <>
+              Don&apos;t have an account?{" "}
+              <button
+                className="underline text-blue-600"
+                type="button"
+                onClick={() => {
+                  setMode("signup");
+                  setErrorMsg("");
+                }}
+              >
+                Sign Up
+              </button>
+            </>
+          ) : (
+            <>
+              Already have an account?{" "}
+              <button
+                className="underline text-blue-600"
+                type="button"
+                onClick={() => {
+                  setMode("login");
+                  setErrorMsg("");
+                }}
+              >
+                Sign In
+              </button>
+            </>
+          )}
+        </div>
       </div>
     </div>
   );
